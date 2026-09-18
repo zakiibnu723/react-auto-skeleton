@@ -44,8 +44,7 @@ export function matchesIgnore(el: Element, ignore?: string[]): boolean {
 export function baseBoxStyle(
   style: CSSStyleDeclaration,
   rect: DOMRect,
-  isContainer = false,
-  depth = 0
+  isContainer = false
 ): CSSProperties {
   const result: CSSProperties = {};
   const display = style.display === "inline" ? "inline-block" : style.display;
@@ -99,43 +98,35 @@ export function baseBoxStyle(
   if (style.maxHeight && style.maxHeight !== "none") result.maxHeight = style.maxHeight;
   if (style.aspectRatio && style.aspectRatio !== "auto") result.aspectRatio = style.aspectRatio;
 
-  // Visual — border-radius scales with element height, clamped 2–12px
+  // Visual — border-radius: clamp exaggerated 999px on non-circles to avoid gepeng ovals
+  let parsedRadius = style.borderRadius;
+  if (parsedRadius && (parsedRadius.includes("999") || parsedRadius.includes("9999"))) {
+    if (Math.abs(rect.width - rect.height) > 8) {
+      parsedRadius = `${Math.max(2, Math.min(6, rect.height / 2))}px`;
+    }
+  }
+
   result.borderRadius =
-    style.borderRadius && style.borderRadius !== "0px"
-      ? style.borderRadius
+    parsedRadius && parsedRadius !== "0px"
+      ? parsedRadius
       : isContainer
         ? undefined
         : `${Math.max(2, Math.min(12, rect.height / 4 || 8))}px`;
 
-  // Preserve or transform background color & border
-  const hasBg =
-    (style.backgroundColor &&
-      style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
-      style.backgroundColor !== "transparent") ||
-    (style.backgroundImage && style.backgroundImage !== "none");
-
-  const hasBorder = style.border && style.border !== "0px none rgb(0, 0, 0)";
-
   if (isContainer) {
-    if (hasBg) {
-      result.backgroundColor =
-        depth > 0
-          ? "var(--ras-subcontainer-bg, #cbd5e1)"
-          : "var(--ras-card-bg, #e2e8f0)";
-      result.backgroundImage = "none";
-    }
-    if (hasBorder) {
-      result.borderColor =
-        depth > 0
-          ? "var(--ras-subcontainer-border, #94a3b8)"
-          : "var(--ras-card-border, #cbd5e1)";
-    }
+    result.backgroundColor = "var(--ras-card-bg, #1e293b)";
+    result.backgroundImage = "none";
+    result.border = "none";
+    result.borderColor = "transparent";
+    result.outline = "none";
     result.boxShadow = "none";
   } else {
     // Leaf elements: background is driven by .ras-skeleton and shimmer animations
     delete result.backgroundColor;
     delete result.backgroundImage;
+    result.border = "none";
     result.borderColor = "transparent";
+    result.outline = "none";
   }
 
   return result;
@@ -149,8 +140,7 @@ export function baseBoxStyle(
 export function createSkeletonNode(
   node: ChildNode,
   animateClass: string,
-  ignore?: string[],
-  depth = 0
+  ignore?: string[]
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) return null;
   if (node.nodeType !== Node.ELEMENT_NODE) return null;
@@ -163,14 +153,14 @@ export function createSkeletonNode(
 
   const rect = el.getBoundingClientRect();
   const children = Array.from(el.childNodes)
-    .map((child) => createSkeletonNode(child, animateClass, ignore, depth + 1))
+    .map((child) => createSkeletonNode(child, animateClass, ignore))
     .filter(Boolean) as ReactElement[];
 
   const textOnly = children.length === 0 && Array.from(el.childNodes).some(isMeaningfulText);
   const isMedia = MEDIA_TAGS.has(el.tagName);
   const isInteractive = INTERACTIVE_TAGS.has(el.tagName);
   const isLeaf = children.length === 0 || isMedia || isInteractive;
-  const style = baseBoxStyle(computed, rect, false, depth);
+  const style = baseBoxStyle(computed, rect, false);
 
   // Detect background, gradient, or border
   const hasBackground =
@@ -206,7 +196,31 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 2. Stat Box / Sub-Card Detection (e.g. 128 Repos box) ──────────────────
+  // ── 2. Thin Bar / Metric Progress Bar Detection (e.g. Card 3 progress bar) ─
+  // Converts thin horizontal bars into sleek, slender skeleton bars instead of gepeng ovals!
+  const isThinBar =
+    rect.height > 0 &&
+    rect.height <= 18 &&
+    rect.width >= 35 &&
+    children.length <= 1;
+
+  if (isThinBar) {
+    const barHeight = Math.max(6, Math.min(10, rect.height));
+    return (
+      <div
+        key={el.dataset?.rasKey || undefined}
+        className={`ras-skeleton ${animateClass}`.trim()}
+        style={{
+          ...style,
+          width: rect.width ? `${rect.width}px` : "100%",
+          height: `${barHeight}px`,
+          borderRadius: "4px"
+        }}
+      />
+    );
+  }
+
+  // ── 3. Stat Box / Sub-Card Detection (e.g. 128 Repos box) ──────────────────
   // If an element is a sub-box container with a background/border and compact size,
   // render the whole box as a solid skeleton block instead of recursing into tiny text bars!
   const isStatBox =
@@ -233,7 +247,7 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 3. Media or Interactive → solid block ──────────────────────────────────
+  // ── 4. Media or Interactive → solid block ──────────────────────────────────
   if (isMedia || isInteractive) {
     return (
       <div
@@ -248,7 +262,7 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 4. Text-bearing leaf node ──────────────────────────────────────────────
+  // ── 5. Text-bearing leaf node ──────────────────────────────────────────────
   if (isLeaf && textOnly) {
     const textContent = Array.from(el.childNodes)
       .filter((c) => c.nodeType === Node.TEXT_NODE)
@@ -289,7 +303,7 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 5. Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────
+  // ── 6. Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────
   if (isLeaf) {
     return (
       <div
@@ -304,13 +318,12 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 6. Container → preserve layout, render skeleton children ───────────────
-  const containerStyle = baseBoxStyle(computed, rect, true, depth);
-  const containerClass = depth > 0 ? "ras-subcontainer" : "ras-container";
+  // ── 7. Container → preserve layout, render skeleton children ───────────────
+  const containerStyle = baseBoxStyle(computed, rect, true);
 
   return (
     <div
-      className={containerClass}
+      className="ras-container"
       style={containerStyle}
       key={el.dataset?.rasKey || undefined}
     >
@@ -341,7 +354,7 @@ export function buildSkeletonTree(
     animate === "none" ? "" : animate === "pulse" ? "ras-animate-pulse" : "ras-animate-shimmer";
 
   const children = Array.from(root.childNodes)
-    .map((child) => createSkeletonNode(child, animateClass, ignore, 0))
+    .map((child) => createSkeletonNode(child, animateClass, ignore))
     .filter(Boolean)
     .map((child, index) =>
       React.isValidElement(child) ? React.cloneElement(child, { key: child.key ?? index }) : child

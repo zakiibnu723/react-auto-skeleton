@@ -17,27 +17,19 @@ export const STYLE_ID = "ras-style-sheet";
  */
 export const styleSheet = `
 :root {
-  /* Tier 1: Container / Card Surface (Abu Cerah) */
-  --ras-card-bg: #e2e8f0;
-  --ras-card-border: #cbd5e1;
-  --ras-subcontainer-bg: #cbd5e1;
-  --ras-subcontainer-border: #94a3b8;
+  /* 2-Tier Hierarchy */
+  /* Tier 1: Card Container Surface (Sleek Dark Slate) */
+  --ras-card-bg: #1e293b;
 
-  /* Tier 2: Leaf Component Elements (Abu Dark) */
+  /* Tier 2: Leaf Component Elements (Slate-700 & Shimmer) */
   --ras-base: #334155;
   --ras-highlight: #475569;
 }
 
 .ras-container {
   background-color: var(--ras-card-bg) !important;
-  border: 1px solid var(--ras-card-border) !important;
-  background-image: none !important;
-  box-shadow: none !important;
-}
-
-.ras-subcontainer {
-  background-color: var(--ras-subcontainer-bg) !important;
-  border: 1px solid var(--ras-subcontainer-border) !important;
+  border: none !important;
+  outline: none !important;
   background-image: none !important;
   box-shadow: none !important;
 }
