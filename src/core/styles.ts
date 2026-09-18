@@ -30,7 +30,11 @@ export const styleSheet = `
   border: none !important;
   border-width: 0 !important;
   border-style: none !important;
+  border-color: transparent !important;
   outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
   box-shadow: none !important;
 }
 
@@ -39,6 +43,12 @@ export const styleSheet = `
   background: var(--ras-base) !important;
   background-color: var(--ras-base) !important;
   border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
   border-radius: var(--ras-radius, 8px);
   overflow: hidden;
   transform: translateZ(0);

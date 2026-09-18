@@ -127,16 +127,27 @@ export function baseBoxStyle(
     }
     result.backgroundImage = "none";
     result.border = "none";
+    result.borderWidth = "0px";
+    result.borderStyle = "none";
     result.borderColor = "transparent";
     result.outline = "none";
+    result.outlineWidth = "0px";
+    result.outlineStyle = "none";
+    result.outlineColor = "transparent";
     result.boxShadow = "none";
   } else {
     // Leaf elements: background is driven by .ras-skeleton and shimmer animations
     delete result.backgroundColor;
     delete result.backgroundImage;
     result.border = "none";
+    result.borderWidth = "0px";
+    result.borderStyle = "none";
     result.borderColor = "transparent";
     result.outline = "none";
+    result.outlineWidth = "0px";
+    result.outlineStyle = "none";
+    result.outlineColor = "transparent";
+    result.boxShadow = "none";
   }
 
   return result;
@@ -231,14 +242,14 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 2. Badge / Tag Pill Detection (e.g. Audio Gear, Engineering) ───────────
+  // ── 2. Badge / Tag Pill Detection (e.g. Audio Gear, Engineering, Active Shield) ──
   const isBadge =
     (hasBackground || (computed.borderRadius && computed.borderRadius !== "0px")) &&
     rect.height > 0 &&
-    rect.height <= 38 &&
+    rect.height <= 44 &&
     rect.width > 0 &&
-    rect.width <= 160 &&
-    (el.textContent?.trim().length || 0) <= 25;
+    rect.width <= 180 &&
+    (el.textContent?.trim().length || 0) <= 30;
 
   if (isBadge) {
     return (
@@ -249,8 +260,11 @@ export function createSkeletonNode(
           ...style,
           width: `${rect.width}px`,
           height: `${rect.height}px`,
+          padding: 0,
+          boxSizing: "border-box",
           borderRadius: style.borderRadius || "6px",
-          display: style.display?.includes("inline") ? "inline-block" : style.display
+          display: style.display?.includes("inline") ? "inline-block" : style.display,
+          flexShrink: 0
         }}
       />
     );
