@@ -157,7 +157,41 @@ export function createSkeletonNode(
   const isLeaf = children.length === 0 || isMedia || isInteractive;
   const style = baseBoxStyle(computed, rect);
 
-  // ── Media or Interactive → solid block ──────────────────────────────────────
+  // Detect background, gradient, or border
+  const hasBackground =
+    (computed.backgroundColor &&
+      computed.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      computed.backgroundColor !== "transparent") ||
+    (computed.backgroundImage && computed.backgroundImage !== "none") ||
+    (computed.borderWidth &&
+      parseFloat(computed.borderWidth) > 0 &&
+      computed.borderStyle !== "none");
+
+  // Circle detection: avatar or circular badge (50% radius)
+  const isCircle =
+    computed.borderRadius.includes("50%") ||
+    (rect.width > 0 &&
+      rect.height > 0 &&
+      parseFloat(computed.borderRadius) >= Math.min(rect.width, rect.height) / 2);
+
+  // ── 1. Circular Avatar or Badge → ALWAYS solid round skeleton ──────────────
+  if (isCircle && (isLeaf || rect.width <= 140)) {
+    return (
+      <div
+        key={el.dataset?.rasKey || undefined}
+        className={`ras-skeleton ${animateClass}`.trim()}
+        style={{
+          ...style,
+          width: rect.width ? `${rect.width}px` : style.width,
+          height: rect.height ? `${rect.height}px` : style.height,
+          borderRadius: "50%",
+          flexShrink: 0
+        }}
+      />
+    );
+  }
+
+  // ── 2. Media or Interactive → solid block ──────────────────────────────────
   if (isMedia || isInteractive) {
     return (
       <div
@@ -172,15 +206,22 @@ export function createSkeletonNode(
     );
   }
 
-  // ── Text-only leaf ───────────────────────────────────────────────────────────
+  // ── 3. Text-bearing leaf node ──────────────────────────────────────────────
   if (isLeaf && textOnly) {
-    const hasBackground =
-      computed.backgroundColor &&
-      computed.backgroundColor !== "rgba(0, 0, 0, 0)" &&
-      computed.backgroundColor !== "transparent";
+    const textContent = Array.from(el.childNodes)
+      .filter((c) => c.nodeType === Node.TEXT_NODE)
+      .map((c) => c.textContent?.trim() || "")
+      .join("");
 
-    if (hasBackground) {
-      // Element with background color (e.g. badge) → solid block
+    // Visual placeholder check:
+    // If it has a background/gradient, or is a tall box containing only emoji/short initials
+    // (e.g. image placeholder with headphones emoji 🎧 or avatar with "IZ")
+    const isVisualPlaceholder =
+      hasBackground ||
+      (textContent.length <= 4 && (rect.height >= 36 || rect.width >= 36)) ||
+      rect.height >= 80;
+
+    if (isVisualPlaceholder) {
       return (
         <div
           key={el.dataset?.rasKey || undefined}
@@ -194,7 +235,7 @@ export function createSkeletonNode(
       );
     }
 
-    // Plain text → stacked bars
+    // Standard multi-line or single-line text → stacked bars
     const textBars = createTextBars(computed, rect, animateClass);
     return (
       <div style={style} key={el.dataset?.rasKey || undefined}>
@@ -203,7 +244,7 @@ export function createSkeletonNode(
     );
   }
 
-  // ── Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────────
+  // ── 4. Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────
   if (isLeaf) {
     return (
       <div

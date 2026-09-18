@@ -47,10 +47,21 @@ export function createTextBars(
   const lineCount = Math.max(1, Math.round(height / lineHeight));
   const barHeight = Math.max(6, Math.min(lineHeight * 0.9, 22));
 
+  // Detect center alignment
+  const isCentered =
+    style.textAlign === "center" ||
+    style.justifyContent === "center" ||
+    style.alignItems === "center";
+
   for (let i = 0; i < lineCount; i += 1) {
     // Last line of multi-line text gets 60% width (natural paragraph break)
     const widthPct = i === lineCount - 1 && lineCount > 1 ? 0.6 : 1;
-    const barWidth = rect.width > 0 ? `${rect.width * widthPct}px` : `${widthPct * 100}%`;
+    let barWidth = rect.width > 0 ? `${rect.width * widthPct}px` : `${widthPct * 100}%`;
+
+    // Ensure small metric text (e.g. counter numbers) doesn't shrink to an invisible dot
+    if (rect.width > 0 && rect.width < 50 && lineCount === 1) {
+      barWidth = `${Math.max(45, rect.width)}px`;
+    }
 
     bars.push(
       <div
@@ -58,11 +69,19 @@ export function createTextBars(
         className={`ras-skeleton ${animateClass}`.trim()}
         style={{
           height: `${barHeight}px`,
-          width: barWidth
+          width: barWidth,
+          margin: isCentered ? "0 auto" : undefined
         }}
       />
     );
   }
 
-  return <div className="ras-text-stack">{bars}</div>;
+  return (
+    <div
+      className="ras-text-stack"
+      style={isCentered ? { alignItems: "center" } : undefined}
+    >
+      {bars}
+    </div>
+  );
 }
