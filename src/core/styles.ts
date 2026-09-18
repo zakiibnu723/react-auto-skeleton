@@ -17,22 +17,49 @@ export const STYLE_ID = "ras-style-sheet";
  */
 export const styleSheet = `
 :root {
-  --ras-base: #e5e7eb;
-  --ras-highlight: #f8fafc;
+  /* Tier 1: Container / Card Surface (Abu Cerah) */
+  --ras-card-bg: #e2e8f0;
+  --ras-card-border: #cbd5e1;
+  --ras-subcontainer-bg: #cbd5e1;
+  --ras-subcontainer-border: #94a3b8;
+
+  /* Tier 2: Leaf Component Elements (Abu Dark) */
+  --ras-base: #334155;
+  --ras-highlight: #475569;
+}
+
+.ras-container {
+  background-color: var(--ras-card-bg) !important;
+  border: 1px solid var(--ras-card-border) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.ras-subcontainer {
+  background-color: var(--ras-subcontainer-bg) !important;
+  border: 1px solid var(--ras-subcontainer-border) !important;
+  background-image: none !important;
+  box-shadow: none !important;
 }
 
 .ras-skeleton {
   position: relative;
-  background: var(--ras-base);
+  background: var(--ras-base) !important;
+  background-color: var(--ras-base) !important;
+  border: none !important;
   border-radius: var(--ras-radius, 8px);
   overflow: hidden;
   transform: translateZ(0);
 }
 
 .ras-animate-shimmer {
-  background: linear-gradient(90deg, var(--ras-base) 0%, var(--ras-highlight) 50%, var(--ras-base) 100%);
-  background-size: 200% 100%;
-  animation: ras-shimmer 1.6s linear infinite;
+  background: linear-gradient(90deg, var(--ras-base) 0%, var(--ras-highlight) 50%, var(--ras-base) 100%) !important;
+  background-size: 200% 100% !important;
+  animation: ras-shimmer 1.6s linear infinite !important;
+}
+
+.ras-animate-pulse {
+  animation: ras-pulse 1.4s ease-in-out infinite !important;
 }
 
 @keyframes ras-shimmer {
@@ -40,13 +67,9 @@ export const styleSheet = `
   100% { background-position: -200% 0; }
 }
 
-.ras-animate-pulse {
-  animation: ras-pulse 1.4s ease-in-out infinite;
-}
-
 @keyframes ras-pulse {
   0% { opacity: 0.88; }
-  50% { opacity: 0.52; }
+  50% { opacity: 0.45; }
   100% { opacity: 0.88; }
 }
 

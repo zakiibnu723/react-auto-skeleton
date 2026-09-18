@@ -41,7 +41,12 @@ export function matchesIgnore(el: Element, ignore?: string[]): boolean {
  * @param style  Computed style of the original element
  * @param rect   Bounding rect of the original element
  */
-export function baseBoxStyle(style: CSSStyleDeclaration, rect: DOMRect): CSSProperties {
+export function baseBoxStyle(
+  style: CSSStyleDeclaration,
+  rect: DOMRect,
+  isContainer = false,
+  depth = 0
+): CSSProperties {
   const result: CSSProperties = {};
   const display = style.display === "inline" ? "inline-block" : style.display;
   result.display = display as CSSProperties["display"];
@@ -96,18 +101,41 @@ export function baseBoxStyle(style: CSSStyleDeclaration, rect: DOMRect): CSSProp
 
   // Visual — border-radius scales with element height, clamped 2–12px
   result.borderRadius =
-    style.borderRadius || `${Math.max(2, Math.min(12, rect.height / 4 || 8))}px`;
+    style.borderRadius && style.borderRadius !== "0px"
+      ? style.borderRadius
+      : isContainer
+        ? undefined
+        : `${Math.max(2, Math.min(12, rect.height / 4 || 8))}px`;
 
-  // Preserve background color (e.g. badges) and border
-  if (
-    style.backgroundColor &&
-    style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
-    style.backgroundColor !== "transparent"
-  ) {
-    result.backgroundColor = style.backgroundColor;
-  }
-  if (style.border && style.border !== "0px none rgb(0, 0, 0)") {
-    result.border = style.border;
+  // Preserve or transform background color & border
+  const hasBg =
+    (style.backgroundColor &&
+      style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      style.backgroundColor !== "transparent") ||
+    (style.backgroundImage && style.backgroundImage !== "none");
+
+  const hasBorder = style.border && style.border !== "0px none rgb(0, 0, 0)";
+
+  if (isContainer) {
+    if (hasBg) {
+      result.backgroundColor =
+        depth > 0
+          ? "var(--ras-subcontainer-bg, #cbd5e1)"
+          : "var(--ras-card-bg, #e2e8f0)";
+      result.backgroundImage = "none";
+    }
+    if (hasBorder) {
+      result.borderColor =
+        depth > 0
+          ? "var(--ras-subcontainer-border, #94a3b8)"
+          : "var(--ras-card-border, #cbd5e1)";
+    }
+    result.boxShadow = "none";
+  } else {
+    // Leaf elements: background is driven by .ras-skeleton and shimmer animations
+    delete result.backgroundColor;
+    delete result.backgroundImage;
+    result.borderColor = "transparent";
   }
 
   return result;
@@ -117,25 +145,12 @@ export function baseBoxStyle(style: CSSStyleDeclaration, rect: DOMRect): CSSProp
 
 /**
  * Recursively converts a single DOM node into a React skeleton element.
- *
- * Decision tree per node:
- *  1. Skip text nodes and non-element nodes
- *  2. Skip elements matching `ignore` selectors
- *  3. Skip hidden elements (display:none / visibility:hidden)
- *  4. Media / Interactive tags → solid skeleton block (fixed pixel dimensions)
- *  5. Text-only leaf with background color → solid skeleton block
- *  6. Text-only leaf without background → createTextBars() stack
- *  7. Other leaf (empty element) → solid skeleton block
- *  8. Container with children → preserve layout, recurse into children
- *
- * @param node         The DOM node to process
- * @param animateClass CSS animation class string ("ras-animate-shimmer" etc.)
- * @param ignore       CSS selectors to skip
  */
 export function createSkeletonNode(
   node: ChildNode,
   animateClass: string,
-  ignore?: string[]
+  ignore?: string[],
+  depth = 0
 ): ReactNode | null {
   if (node.nodeType === Node.TEXT_NODE) return null;
   if (node.nodeType !== Node.ELEMENT_NODE) return null;
@@ -148,14 +163,14 @@ export function createSkeletonNode(
 
   const rect = el.getBoundingClientRect();
   const children = Array.from(el.childNodes)
-    .map((child) => createSkeletonNode(child, animateClass, ignore))
+    .map((child) => createSkeletonNode(child, animateClass, ignore, depth + 1))
     .filter(Boolean) as ReactElement[];
 
   const textOnly = children.length === 0 && Array.from(el.childNodes).some(isMeaningfulText);
   const isMedia = MEDIA_TAGS.has(el.tagName);
   const isInteractive = INTERACTIVE_TAGS.has(el.tagName);
   const isLeaf = children.length === 0 || isMedia || isInteractive;
-  const style = baseBoxStyle(computed, rect);
+  const style = baseBoxStyle(computed, rect, false, depth);
 
   // Detect background, gradient, or border
   const hasBackground =
@@ -191,7 +206,34 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 2. Media or Interactive → solid block ──────────────────────────────────
+  // ── 2. Stat Box / Sub-Card Detection (e.g. 128 Repos box) ──────────────────
+  // If an element is a sub-box container with a background/border and compact size,
+  // render the whole box as a solid skeleton block instead of recursing into tiny text bars!
+  const isStatBox =
+    children.length > 0 &&
+    hasBackground &&
+    rect.height > 0 &&
+    rect.height <= 110 &&
+    rect.width > 0 &&
+    rect.width <= 200 &&
+    (el.textContent?.trim().length || 0) < 30;
+
+  if (isStatBox) {
+    return (
+      <div
+        key={el.dataset?.rasKey || undefined}
+        className={`ras-skeleton ${animateClass}`.trim()}
+        style={{
+          ...style,
+          width: rect.width ? `${rect.width}px` : style.width,
+          height: rect.height ? `${rect.height}px` : style.height,
+          borderRadius: style.borderRadius || "10px"
+        }}
+      />
+    );
+  }
+
+  // ── 3. Media or Interactive → solid block ──────────────────────────────────
   if (isMedia || isInteractive) {
     return (
       <div
@@ -206,20 +248,23 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 3. Text-bearing leaf node ──────────────────────────────────────────────
+  // ── 4. Text-bearing leaf node ──────────────────────────────────────────────
   if (isLeaf && textOnly) {
     const textContent = Array.from(el.childNodes)
       .filter((c) => c.nodeType === Node.TEXT_NODE)
       .map((c) => c.textContent?.trim() || "")
       .join("");
 
-    // Visual placeholder check:
-    // If it has a background/gradient, or is a tall box containing only emoji/short initials
-    // (e.g. image placeholder with headphones emoji 🎧 or avatar with "IZ")
+    const words = textContent.split(/\s+/).filter(Boolean);
+
+    // True prose text (titles, headings, paragraphs with multiple words)
+    // must ALWAYS be rendered as authentic stacked text bars!
+    const isProseText = words.length >= 2 || textContent.length > 8;
+
+    // Visual placeholder: only when NOT prose text AND (has background/gradient OR tall height with single emoji/initials)
     const isVisualPlaceholder =
-      hasBackground ||
-      (textContent.length <= 4 && (rect.height >= 36 || rect.width >= 36)) ||
-      rect.height >= 80;
+      !isProseText &&
+      (hasBackground || (textContent.length <= 4 && (rect.height >= 36 || rect.width >= 36)));
 
     if (isVisualPlaceholder) {
       return (
@@ -244,7 +289,7 @@ export function createSkeletonNode(
     );
   }
 
-  // ── 4. Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────
+  // ── 5. Other leaf (e.g. empty div, icon wrapper) → solid block ─────────────
   if (isLeaf) {
     return (
       <div
@@ -259,9 +304,16 @@ export function createSkeletonNode(
     );
   }
 
-  // ── Container → preserve layout, render skeleton children ───────────────────
+  // ── 6. Container → preserve layout, render skeleton children ───────────────
+  const containerStyle = baseBoxStyle(computed, rect, true, depth);
+  const containerClass = depth > 0 ? "ras-subcontainer" : "ras-container";
+
   return (
-    <div style={style} key={el.dataset?.rasKey || undefined}>
+    <div
+      className={containerClass}
+      style={containerStyle}
+      key={el.dataset?.rasKey || undefined}
+    >
       {children}
     </div>
   );
@@ -289,7 +341,7 @@ export function buildSkeletonTree(
     animate === "none" ? "" : animate === "pulse" ? "ras-animate-pulse" : "ras-animate-shimmer";
 
   const children = Array.from(root.childNodes)
-    .map((child) => createSkeletonNode(child, animateClass, ignore))
+    .map((child) => createSkeletonNode(child, animateClass, ignore, 0))
     .filter(Boolean)
     .map((child, index) =>
       React.isValidElement(child) ? React.cloneElement(child, { key: child.key ?? index }) : child
