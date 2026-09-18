@@ -113,8 +113,18 @@ export function baseBoxStyle(
         ? undefined
         : `${Math.max(2, Math.min(12, rect.height / 4 || 8))}px`;
 
+  const hasBg =
+    (style.backgroundColor &&
+      style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      style.backgroundColor !== "transparent") ||
+    (style.backgroundImage && style.backgroundImage !== "none");
+
   if (isContainer) {
-    result.backgroundColor = "var(--ras-card-bg, #1e293b)";
+    if (hasBg) {
+      result.backgroundColor = "var(--ras-card-bg, #1e293b)";
+    } else {
+      result.backgroundColor = "transparent";
+    }
     result.backgroundImage = "none";
     result.border = "none";
     result.borderColor = "transparent";
@@ -216,6 +226,31 @@ export function createSkeletonNode(
           height: rect.height ? `${rect.height}px` : style.height,
           borderRadius: "50%",
           flexShrink: 0
+        }}
+      />
+    );
+  }
+
+  // ── 2. Badge / Tag Pill Detection (e.g. Audio Gear, Engineering) ───────────
+  const isBadge =
+    (hasBackground || (computed.borderRadius && computed.borderRadius !== "0px")) &&
+    rect.height > 0 &&
+    rect.height <= 38 &&
+    rect.width > 0 &&
+    rect.width <= 160 &&
+    (el.textContent?.trim().length || 0) <= 25;
+
+  if (isBadge) {
+    return (
+      <div
+        key={el.dataset?.rasKey || undefined}
+        className={`ras-skeleton ${animateClass}`.trim()}
+        style={{
+          ...style,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          borderRadius: style.borderRadius || "6px",
+          display: style.display?.includes("inline") ? "inline-block" : style.display
         }}
       />
     );

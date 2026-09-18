@@ -63,13 +63,12 @@ export function createTextBars(
     // Last line of multi-line text gets 60% width (natural paragraph break)
     const widthPct = i === lineCount - 1 && lineCount > 1 ? 0.6 : 1;
 
-    // Use relative percentage width so it NEVER overflows the container,
-    // or if a small inline badge/metric, use clamped pixel width
-    let barWidth = `${widthPct * 100}%`;
-    if (rect.width > 0 && rect.width < 80 && lineCount === 1) {
-      const availWidth = Math.max(30, rect.width - padLeft - padRight);
-      barWidth = `${availWidth}px`;
-    }
+    // For single-line text (badges, headings, short spans), use pixel width so it never collapses in flex/inline containers!
+    // For multi-line text (paragraphs), use percentage width to avoid container overflow.
+    const barWidth =
+      lineCount === 1 && rect.width > 0
+        ? `${Math.max(30, rect.width - padLeft - padRight)}px`
+        : `${widthPct * 100}%`;
 
     bars.push(
       <div
