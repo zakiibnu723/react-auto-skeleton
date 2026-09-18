@@ -36,19 +36,19 @@ This causes code duplication, inconsistency, and maintenance overhead.
 ## 📦 Installation
 
 ```bash
-npm install @ibnuzaki/react-auto-skeleton
+npm install @zakiibnu723/react-auto-skeleton
 ```
 
 or
 
 ```bash
-yarn add @ibnuzaki/react-auto-skeleton
+yarn add @zakiibnu723/react-auto-skeleton
 ```
 
 or
 
 ```bash
-pnpm add @ibnuzaki/react-auto-skeleton
+pnpm add @zakiibnu723/react-auto-skeleton
 ```
 
 ---
@@ -56,8 +56,8 @@ pnpm add @ibnuzaki/react-auto-skeleton
 ## 🚀 Quick Start
 
 ```tsx
-import { AutoSkeleton } from '@ibnuzaki/react-auto-skeleton';
-// or use alias: import { SkeletonMorph } from '@ibnuzaki/react-auto-skeleton';
+import { AutoSkeleton } from '@zakiibnu723/react-auto-skeleton';
+// or use alias: import { SkeletonMorph } from '@zakiibnu723/react-auto-skeleton';
 import { useState } from 'react';
 
 function App() {
