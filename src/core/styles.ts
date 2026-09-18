@@ -29,6 +29,8 @@ export const styleSheet = `
 .ras-container {
   background-color: var(--ras-card-bg) !important;
   border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
   outline: none !important;
   background-image: none !important;
   box-shadow: none !important;

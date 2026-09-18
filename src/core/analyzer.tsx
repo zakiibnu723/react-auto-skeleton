@@ -146,7 +146,15 @@ export function createSkeletonNode(
   if (node.nodeType !== Node.ELEMENT_NODE) return null;
 
   const el = node as HTMLElement;
-  if (matchesIgnore(el, ignore)) return null;
+  if (matchesIgnore(el, ignore)) {
+    return (
+      <div
+        key={el.dataset?.rasKey || undefined}
+        style={{ display: "contents" }}
+        dangerouslySetInnerHTML={{ __html: el.outerHTML }}
+      />
+    );
+  }
 
   const computed = getComputedStyle(el);
   if (computed.display === "none" || computed.visibility === "hidden") return null;
@@ -161,6 +169,23 @@ export function createSkeletonNode(
   const isInteractive = INTERACTIVE_TAGS.has(el.tagName);
   const isLeaf = children.length === 0 || isMedia || isInteractive;
   const style = baseBoxStyle(computed, rect, false);
+
+  // Detect if an element is a prose/text block containing inline text elements (<code>, <span>, <strong>, etc.)
+  const INLINE_TAGS = new Set(["CODE", "SPAN", "STRONG", "B", "EM", "I", "A", "SMALL", "SUB", "SUP", "MARK"]);
+  const childElements = Array.from(el.children);
+  const isInlineTextParent =
+    (el.tagName === "P" || /^H[1-6]$/.test(el.tagName) || el.tagName === "LABEL") &&
+    (childElements.length === 0 || childElements.every((c) => INLINE_TAGS.has(c.tagName)));
+
+  // If it's a unified text element (e.g. <p> with <code> inside), render unified text bars for the whole block!
+  if (isInlineTextParent && (el.textContent?.trim().length || 0) > 0) {
+    const textBars = createTextBars(computed, rect, animateClass);
+    return (
+      <div style={style} key={el.dataset?.rasKey || undefined}>
+        {textBars}
+      </div>
+    );
+  }
 
   // Detect background, gradient, or border
   const hasBackground =

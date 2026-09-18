@@ -43,8 +43,14 @@ export function createTextBars(
     return fontSize * 1.4;
   })();
 
-  const height = rect.height || lineHeight;
-  const lineCount = Math.max(1, Math.round(height / lineHeight));
+  // Subtract top/bottom padding to get true text content height
+  const padTop = parseFloat(style.paddingTop) || 0;
+  const padBottom = parseFloat(style.paddingBottom) || 0;
+  const padLeft = parseFloat(style.paddingLeft) || 0;
+  const padRight = parseFloat(style.paddingRight) || 0;
+
+  const contentHeight = Math.max(lineHeight, (rect.height || lineHeight) - padTop - padBottom);
+  const lineCount = Math.max(1, Math.round(contentHeight / lineHeight));
   const barHeight = Math.max(6, Math.min(lineHeight * 0.9, 22));
 
   // Detect center alignment
@@ -56,11 +62,13 @@ export function createTextBars(
   for (let i = 0; i < lineCount; i += 1) {
     // Last line of multi-line text gets 60% width (natural paragraph break)
     const widthPct = i === lineCount - 1 && lineCount > 1 ? 0.6 : 1;
-    let barWidth = rect.width > 0 ? `${rect.width * widthPct}px` : `${widthPct * 100}%`;
 
-    // Ensure small metric text (e.g. counter numbers) doesn't shrink to an invisible dot
-    if (rect.width > 0 && rect.width < 50 && lineCount === 1) {
-      barWidth = `${Math.max(45, rect.width)}px`;
+    // Use relative percentage width so it NEVER overflows the container,
+    // or if a small inline badge/metric, use clamped pixel width
+    let barWidth = `${widthPct * 100}%`;
+    if (rect.width > 0 && rect.width < 80 && lineCount === 1) {
+      const availWidth = Math.max(30, rect.width - padLeft - padRight);
+      barWidth = `${availWidth}px`;
     }
 
     bars.push(
@@ -70,6 +78,8 @@ export function createTextBars(
         style={{
           height: `${barHeight}px`,
           width: barWidth,
+          maxWidth: "100%",
+          boxSizing: "border-box",
           margin: isCentered ? "0 auto" : undefined
         }}
       />
