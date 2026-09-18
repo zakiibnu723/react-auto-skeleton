@@ -1,0 +1,203 @@
+PROPOSAL SKRIPSI
+
+PENGEMBANGAN LIBRARY REACT UNTUK GENERASI SKELETON LOADING OTOMATIS DARI STRUKTUR KOMPONEN
+
+
+
+
+
+
+Diajukan Oleh:
+Ibnu Zaki Alhawari
+22106050027
+
+
+
+
+
+
+PROGRAM STUDI INFORMATIKA
+FAKULTAS SAINS DAN TEKNOLOGI
+UNIVERSITAS ISLAM NEGERI SUNAN KALIJAGA
+YOGYAKARTA
+2025
+
+DAFTAR ISI
+
+BAB I
+PENDAHULUAN
+ Latar Belakang
+Pengalaman pengguna (User Experience/UX) merupakan salah satu aspek utama dalam pengembangan aplikasi web modern. Salah satu problematika UX yang kerap ditemukan oleh pengguna  adalah waktu pemuatan (loading time), yaitu jeda waktu ketika proses memuat data. Penelitian yang dilakukan oleh Gao et al. (2017) menunjukan bahwa persepsi pengguna terhadap kecepatan loading time mempengaruhi kualitas UX. Waktu tunggu yang lama akan menurunkan penilaian pengguna terhadap performa dan kenyamanan aplikasi web.
+Dalam praktik pengembangan web modern saat ini, berbagai macam teknologi dan library digunakan untuk memudahkan proses pengembangan. salah satu teknologi yang banyak digunakan adalah React.js, sebuah libary JavaScript yang dirancang untuk membangun antarmuka pengguna yang dinamis. React menggunakan pedekatan bebabasis komponen sehingga memungkinkan pengelolaan antarmuka secara modular dan reusable. (Meta Platforms Inc, n.d.). Dalam implementasinya, aplikasi berbasis React umumnya banyak melibatkan proses pengambilan data secara asyncronous, sehingga kondisi loading state  menjadi hal yang tidak terpisahkan dalam penggunaan aplikasi.
+Pada saat proses pemuatan data,  tampilan antarmuka umumnya akan terlihat kosong. Untuk mengatasi kondisi ini,  berbagai teknik telah dikembangkan, Salah satunya adalah penggunaan skeleton loading. Menurut Garg (2025), skeleton loading berfungsi sebagai mekanisme umpan balik visual (visual feedback) dengan menampilkan placeholder yang menyerupai struktur konten akhir. Dalam hasil penelitiannya, skeleton loading mampu memperbaiki persepsi performa hingga 18-20% dan mengurangi tingkat bounce rate, karena menanamkan harapan kepada pengguna bahwa konten akan segera tampil. Dengan demikian, penggunaan skeleton loading memiliki peran penting dalam meningkatkan kualitas pengalaman pengguna saat proses pemuatan data.
+Namun, di dalam pengembangan aplikasi React, implementasi skeleton loading umumnya masih dilakukan secara manual. Pengembang perlu membuat komponen skeleton secara terpisah dengan mereplika struktur komponen asli. Pendekatan ini mengakibatkan banyak duplikasi kode yang dapat meningkatkan kompleksitas basis kode (codebase). Selain itu, setiap perubahan pada komponen asli tidak langsung tercermin pada komponen skeleton, sehingga pengembang perlu melakukan penyesuaian ulang secara manual untuk menjaga konsistensi antarmuka. Kondisi ini membuat beban pemeliharaan semakin meningkat seiring dengan berkembangnya aplikasi (Tkachenko, 2023)
+Berdasarkan uraian masalah tersebut, penelitian ini mengusulkan pengembangan library React yang mampu melakukan generasi skeleton loading secara otomatis dari struktur komponen asli. Library ini diharapakan dapat mengatasi masalah duplikasi kode dan konsistensi antarmuka yang disebabkan oleh implementasi skeleton secara manual.
+ Rumusan Masalah
+Berdasarkan latar belakang yang telah diuraikan, permasalahan yang diangkat pada penelitian ini yaitu: “Bagaimana merancang dan mengimplementasikan library React yang mampu  melakukan generasi skeleton loading secara otomatis dari struktur komponen asli?”
+ Batasan Masalah
+Agar penelitian tidak keluar dari luar lingkup pokok permasalahan yang dirumusakan, maka cakupan masalah dibatasi pada:
+Library yang dikembangkan dikhususkan untuk ekosistem react.
+Proses generasi skeleton dilakukan secara deterministik melalui ekstraksi struktur Virtual DOM atau props komponen, dan tidak menggunakan teknik Machine Learning atau AI (Artificial Intelligence).
+Library tidak mencakup optimasi data fetching, melainkan hanya pada representasi visual saat loading state.
+ Tujuan Penelitian
+Adapun tujuan dari penelitian ini adalah sebagai berikut: “Merancang dan mengimplementasikan library react yang mampu  melakukan generasi skeleton loading secara otomatis dari struktur komponen asli.”
+ Manfaat Penelitian 
+Hasil dari penelitian ini diharapkan dapat memberikan manfaat diantaranya sebagai berikut:
+Memberikan solusi efisien bagi pengembang dalam melakukan generasi skeleton loading otomatis sehingga dapat mengurangi duplikasi kode.
+Menjamin konsistensi antarmuka antara komponen asli dengan tampilan loading secara sinkron.
+Menjadi referensi ilmiah dalam pengembangan alat bantu (tooling) pemrograman berbasis komponen.
+
+BAB II
+TINJAUAN PUSTAKA DAN LANDASAN TEORI
+Tinjauan Pustaka 
+Pada tahap ini dilakukan studi literatur, terhadap penelitian terdahulu yang berkaitan dengan Pengembangan Library React untuk Generasi Skeleton Loading Otomatis dari Struktur Komponen. Salah satu penelitian yang membahas pentingnya skeleton loading dalam meningkatkan pengalaman pengguna telah dilakukan oleh Garg (2025). Penelitian tersebut mengkaji bagaimana skeleton loading berperan sebagai mekanisme visual feedback selama proses pemuatan data pada aplikasi web. Hasil penelitian menunjukkan bahwa penggunaan skeleton loading mampu meningkatkan persepsi kecepatan (perceived performance) dibandingkan tampilan kosong atau loading spinner, karena pengguna dapat memahami struktur konten yang akan ditampilkan. Selain itu, skeleton loading juga terbukti mengurangi tingkat ketidakpastian pengguna saat menunggu, sehingga berdampak positif terhadap kualitas user experience selama proses loading.
+Penelitian selanjutnya dilakukan oleh Heinonen (2025) yang berfokus pada pengembangan library komponen antarmuka pengguna berbasis React. Penelitian ini bertujuan untuk mengurangi duplikasi kode serta menjaga konsistensi tampilan antarmuka melalui penerapan komponen yang bersifat reusable. Dalam penelitian tersebut, library dikembangkan menggunakan React dan TypeScript dengan pendekatan pengembangan berbasis komponen, serta didukung oleh dokumentasi dan pengujian menggunakan Storybook. Hasil penelitian menunjukkan bahwa penggunaan library komponen terpusat mampu meningkatkan maintainability dan efisiensi pengembangan aplikasi, terutama pada proyek dengan skala yang berkembang. Temuan ini relevan dengan penelitian yang dilakukan karena menunjukkan bahwa pengembangan library React merupakan solusi efektif untuk mengatasi permasalahan redundansi dan kompleksitas kode pada pengembangan antarmuka pengguna.
+Penelitian lain yang berkaitan dengan penggunaan library komponen React dilakukan oleh Salonen (2023) yang melakukan penelitian mengenai evaluasi library komponen antarmuka pada pengembangan aplikasi React. Penelitian ini menganalisis beberapa library komponen React berdasarkan sejumlah kriteria, seperti kelengkapan komponen, kualitas dokumentasi, kompatibilitas, keterbatasan teknis, dan reliabilitas. Metode evaluasi yang digunakan memungkinkan perbandingan objektif antar library untuk menentukan kesesuaian penggunaannya pada berbagai skala proyek. Hasil penelitian menunjukkan bahwa pemilihan library komponen yang tepat dapat meningkatkan efisiensi pengembangan, kualitas aplikasi, serta keberlanjutan pengembangan jangka panjang. Penelitian ini memperkuat pentingnya pengembangan library React yang terstruktur dan mudah digunakan dalam mendukung proses pengembangan aplikasi web modern.
+
+
+Tabel 1 Ringkasan Tinjauan Pustaka
+Peneliti (tahun)
+Topik
+Metode
+Hasil
+Garg (2025) 
+User Experience (UX), Skeleton Loading
+Eksperimen dan evaluasi UX
+Skeleton loading meningkatkan persepsi performa dan kenyamanan pengguna selama proses loading. 
+Heinonen (2025) 
+React UI Component Library
+Component-based development menggunakan React dan TypeScript
+Library komponen mengurangi duplikasi kode dan meningkatkan konsistensi serta maintainability
+Salonen (2023) 
+Evaluasi UI Component Library React
+Studi komparatif dan evaluasi kriteria
+Pemilihan library yang tepat meningkatkan efisiensi dan kualitas pengembangan aplikasi
+
+
+ Landasan Teori
+2.2.1. User Experience (UX)
+User Experience (UX) merupakan konsep multidimensional yang menggambarkan persepsi, respons, serta kondisi emosional pengguna yang muncul dari interaksi dengan suatu sistem dalam konteks penggunaan tertentu. UX tidak hanya berkaitan dengan aspek kegunaan atau tampilan antarmuka, tetapi mencakup keseluruhan pengalaman yang terbentuk dari hubungan antara pengguna, sistem, dan konteks penggunaan. Dalam pengembangan aplikasi web, UX menjadi indikator penting kualitas sistem karena pengalaman yang dirasakan pengguna sering kali dipengaruhi oleh bagaimana sistem merespons aksi pengguna secara keseluruhan (Berni & Borgianni, 2021).
+2.2.2. Perceived Loading Time
+Perceived loading time merujuk pada bagaimana pengguna merasakan durasi waktu tunggu selama sistem memproses dan menampilkan konten setelah suatu aksi dilakukan. Dalam konteks pengalaman pengguna, persepsi ini tidak selalu sejalan dengan durasi pemuatan aktual, melainkan dipengaruhi oleh cara proses loading direpresentasikan melalui elemen visual pada antarmuka. Penyediaan umpan balik visual (visual feedback) selama fase pemuatan dapat mengurangi ketidakpastian, menurunkan tingkat frustrasi, serta membentuk persepsi performa sistem yang lebih baik dari sudut pandang pengguna (Vladić et al., 2020). Oleh karena itu, pengelolaan loading state menjadi elemen penting dalam desain antarmuka aplikasi web modern, khususnya pada aplikasi berbasis React yang banyak melibatkan proses pengambilan data secara asynchronous.
+2.2.3. Skeleton Loading
+Skeleton loading adalah elemen UI placeholder yang didesain untuk mencerminkan tata letak konten yang akan dimuat. Tujuan utamanya adalah memberikan umpan balik visual (visual feedback) yang segera kepada pengguna, menciptakan ilusi kemajuan dan menjaga stabilitas tata letak, sehingga secara signifikan meningkatkan kinerja yang dirasakan (perceived performance) meskipun waktu loading aktual tidak berubah. Strategi ini bekerja berdasarkan prinsip psikologis dengan menetapkan ekspektasi tentang struktur konten yang akan datang, yang mengurangi ketidakpastian dan stres kognitif selama proses loading (Garg, 2025).
+2.2.4. React.js
+React.js adalah sebuah library JavaScript untuk membangun antarmuka pengguna (user interfaces) dengan pendekatan berbasis komponen. Komponen merupakan unit independen yang dapat digabungkan untuk membentuk antarmuka yang lebih kompleks. Pendekatan ini memungkinkan pengembangan antarmuka yang modular dan mudah dipelihara (Meta Platforms Inc, n.d.) 
+2.2.5. Library
+Library dalam pengembangan perangkat lunak merujuk pada sekumpulan komponen pihak ketiga (third-party components) yang dirancang untuk digunakan kembali guna menyediakan fungsionalitas tertentu dalam suatu aplikasi. Dalam ekosistem JavaScript, penggunaan library menjadi pendekatan umum untuk meningkatkan efisiensi pengembangan melalui pemanfaatan komponen yang bersifat reusable, sehingga pengembang tidak perlu mengimplementasikan kembali fungsionalitas yang serupa. Pendekatan ini memungkinkan peningkatan produktivitas dan mempercepat laju pengembangan aplikasi (Terzi et al., 2022).
+2.2.6 Metode Prototyping
+Metode prototyping merupakan metode pengembangan sistem yang menekankan pada pembuatan model awal (prototype) sebagai representasi dari sistem yang akan dikembangkan. Prototype digunakan untuk mengevaluasi kebutuhan, menguji fungsi, serta memperoleh umpan balik sebelum sistem dikembangkan secara lebih lengkap. Menurut pressman (2012), metode prototyping terdiri dari berbagai tahapan berikut: Communication, Quick Plan, Modeling Quick design, Construction of Prototype dan Deployment delivery & feedback. 
+
+
+BAB III
+METODE PENGEMBANGAN SISTEM
+ Alat dan Bahan Penelitian
+Dalam pengembangan Library ini, peneliti menggunakan perangkat keras dan perangkat lunan. Adapun rincian spesifikasi perangkat keras dan perangkat lunak yang digunakan dalam penelitian adalah sebagai berikut.
+3.1.1. Perangkat Keras (Hardware)
+Dalam mendukung pengembangan library digunakan sebuah laptop dengan spesifikasi sebagai berikut:
+Processor AMD A8 Radeon Graphics
+RAM 8 GB
+Memory SSD 512 GB
+3.1.2. Perangkat Lunak (Software)
+	Perangkat lunak yang digunakan dalam pengembangan library adalah sebagai berikut:
+Sistem Operasi Windows 10
+Browser Google Chrome
+Visual Studio Code
+ Metode Pengembangan Sistem
+Metode pengembangan sistem yang digunakan dalam penelitian ini merupakan metode yang mengacu pada tahapan SDLC (Software Development Life Cycle), yakni dengan menggunakan metode prototyping/prototype. Dimana terdapat lima tahapan yang harus dikerjakan yaitu Communication, Quick Plan, Modeling Quick design, Construction of Prototype dan Deployment delivery & feedback (pressman, 2012)
+3.2.1. Communication
+Pada tahap awal ini, dilakukan analisis kebutuhan fungsional maupun non-fungsional dengan mengidentifikasi masalah utama pengembang React, yaitu beban pemeliharaan dan duplikasi kode saat membuat skeleton loading secara manual. Peneliti melakukan diskusi atau observasi untuk menentukan fitur utama yang perlu dimiliki oleh library.
+3.2.2. Quick Plan
+Setelah kebutuhan teridentifikasi, selanjutnya dilakukan perencanaan cepat untuk merancang mekanisme kerja library yang akan dikembangkan. Perencanaan ini mencakup alur proses generasi skeleton loading otomatis, ruang lingkup fungsionalitas, serta batasan pengembangan.
+3.2.3. Modeling Quick Design
+Tahap ini berfokus pada perancangan teknis library sebelum implementasi dilakukan. Perancangan ini meliputi desain arsitektur library, mekanisme internal, serta hubungan antar komponen utama dalam proses generasi skeleton loading otomatis.
+3.2.4. Construction of Prototype
+Pada tahap ini, dilakukan proses pengkodean (coding) untuk menghasilkan versi awal (prototipe) library. Peneliti mengimplementasikan algoritma transformasi otomatis dari komponen asli menjadi skeleton loading menggunakan React. Prototipe ini kemudian diuji secara internal untuk memastikan bahwa library mampu melakukan rendering skeleton yang konsisten dengan struktur aslinya tanpa memerlukan pembuatan komponen skeleton manual.
+3.2.5. Deployment, Delivery, & Feedback
+Pada tahap ini, prototipe library yang telah dirancang diberikan kepada pengguna (pengembang web) untuk diuji dalam skenario proyek nyata. Berdasarkan hasil pengujian tersebut, peneliti mengumpulkan umpan balik (feedback) terkait kemudahan penggunaan (usabilitas), akurasi visual skeleton yang dihasilkan, serta dampaknya terhadap efisiensi kode. Umpan balik yang diperoleh dijadikan dasar untuk melakukan iterasi perbaikan (refinement) pada siklus berikutnya hingga diperoleh versi rilis akhir yang stabil dan andal.
+
+
+BAB IV
+ANALISIS & PERANCANGAN SISTEM
+4.1 Analisis Kebutuhan
+Analisis kebutuhan sistem merupakan tahap Communication dan Quick Plan pada implementasi metode prototyping, di mana tahap ini mengidentifikasi kebutuhan fungsional dan non-fungsional yang diperlukan dalam pengembangan library react-auto-skeleton.
+Analisis kebutuhan dilakukan dengan melakukan observasi terhadap proses pengembangan antarmuka pengguna (UI) pada aplikasi berbasis React, khususnya dalam implementasi loading state dan penggunaan skeleton loader yang masih dilakukan secara manual. Selain itu, dilakukan pula penyebaran kuesioner kepada para pengembang React untuk mengumpulkan informasi terkait kendala, kebutuhan, serta preferensi mereka dalam mengelola tampilan loading agar lebih efisien dan konsisten. 
+4.1.1 Analisis Kebutuhan Fungsional Awal (Core Prototype)
+	Analisis kebutuhan fungsional awal menitikberatkan pada perwujudan fungsi inti (core functionality) library untuk mengatasi masalah pokok pengembang, yaitu otomatisasi skeleton loading tanpa duplikasi kode. Kebutuhan fungsional inti tersebut antara lain:
+1. Library harus mampu menghasilkan tampilan skeleton loading secara otomatis dari komponen React yang diberikan, tanpa memerlukan pembuatan komponen skeleton terpisah secara manual. 
+2. Library harus mampu menganalisis struktur DOM hasil render komponen untuk mengekstrak informasi layout, dimensi, dan hierarki elemen secara akurat. 
+3. Skeleton yang dihasilkan harus mempertahankan struktur layout asli komponen, mencakup properti flexbox, grid, spacing (padding, margin, gap), serta dimensi elemen (width, height). 
+4. Library harus menyediakan prop loading bertipe boolean untuk mengontrol secara dinamis kapan skeleton ditampilkan dan kapan komponen asli dirender. 
+5. Library harus mampu membaca dan merefleksikan computed styles yang diterapkan melalui Tailwind CSS, CSS Modules, maupun inline styles pada komponen yang dibungkus. 
+
+Kebutuhan fungsional lanjutan (seperti opsi kustomisasi animasi, selektor pengabaian elemen tertentu / ignore selector, serta penyesuaian dinamis resize) akan diidentifikasi dan dievolusikan lebih lanjut melalui siklus umpan balik (feedback loop) dari pengembang pada iterasi pengembangan prototipe berikutnya. 
+4.1.2 Analisis Kebutuhan Non-Fungsional
+	Kebutuhan non-fungsional mendefinisikan standar kualitas dan batasan teknis yang harus dipenuhi oleh library: 
+Library harus dapat diintegrasikan ke dalam proyek React yang sudah ada hanya dengan membungkus komponen, tanpa memerlukan konfigurasi tambahan yang kompleks (zero-config by default). 
+Proses analisis DOM dan generasi skeleton tidak boleh menyebabkan penurunan performa yang signifikan pada aplikasi. Rendering skeleton harus selesai dalam waktu yang tidak terasa oleh pengguna akhir. 
+Library harus kompatibel dengan React versi 17 ke atas, serta dapat digunakan bersama ekosistem styling umum seperti Tailwind CSS, CSS Modules, dan Styled Components. 
+Kode library harus terstruktur secara modular sehingga setiap bagian fungsionalitas dapat dikembangkan, diuji, dan diperbarui secara independen. 
+Library harus memiliki ukuran bundle yang kecil dan tidak membawa dependensi eksternal yang berat, sehingga tidak membebani ukuran aplikasi pengguna. 
+4.2 Perancangan Sistem
+	Setelah tahap analisis kebutuhan sistem dilakukan, tahapan selanjutnya adalah melakukan perancangan sistem, yang pada metode prototype termasuk pada tahapan Modeling Quick Design. Perancangan sistem divisualisasikan menggunakan diagram-diagram, diantaranya: Package Diagram dan Component Diagram. Diagram-diagram ini berfungsi untuk memberikan gambaran secara umum sistem yang akan dikembangkan.  
+4.2.1 Package Diagram
+
+
+4.2.2 Component Diagram
+
+
+
+ Jadwal Penelitian
+Tabel 2 Jadwal Penelitian
+Kegiatan
+Bulan ke-
+Indikator Capaian
+1
+2
+3
+4
+5
+6
+
+Seminar Proposal
+
+Lulus seminar
+Melakaukan kajian teknis mendalam, Analisis kebutuhan, serta perancangan arsitektur awal.
+
+Teridentifikasinya daftar kebutuhan dan terancangnya desain arsitektur teknis.
+Implementasi Prototype
+
+Prototype berfungsi sesuai rancangan.
+Uji coba terbatas dan pengumpulan feedback.
+
+Library telah dipaketkan dan dapat di instal, data feedback terkumpul.
+Refinemen berdasarkan feedback dan penulisan hasil implementasi dan pengujian (BAB 4 & 5)
+
+Versi stabil library (v1.0.0) telah rilis, BAB 4 & 5 disetujui pembimbing.
+Munaqasyah
+
+Lulus muqasyah
+
+Bulan ke-1: April 2026
+
+
+DAFTAR PUSTAKA
+
+Berni, A., & Borgianni, Y. (2021). From the definition of user experience to a framework to classify its applications in design. In Proceedings of the International Conference on Engineering Design (ICED21), Gothenburg, Sweden, 16-20 August 2021. DOI:10.1017/pds.2021.424 (p. 1).
+Gao, Q., Dey Parvez, P., & Ahammad, P. (2017). Perceived Performance of Webpages In the Wild: Insights from Large-scale Crowdsourcing of Above-the-Fold QoE. Instart Logic Inc. https://arxiv.org/abs/1704.01220
+Garg, T. (2025). UI performance optimization: The interplay of caching and pagination. European Journal of Computer Science and Information Technology, 13(42), 83-92. https://doi.org/10.37745/ejcsit.2013/vol13n428392
+Heinonen, J. (2025). Creating a React UI Component Library (Bachelor’s thesis, Turku University of Applied Sciences).
+Meta Platforms, Inc. (n.d.). React Documentation. react.dev
+Pressman, R. S. (2012). Rekayasa Perangkat Lunak: Pendekatan Praktisi (Ed. 7). Andi Publisher.
+Salonen, S. (2023). Evaluation of UI component libraries in React development (Master of Science Thesis, Tampere University).
+Terzi, A., Christou, O., Angelidis, P., & Bibi, S. (2022). Software Reuse and Evolution in JavaScript Applications. In 2022 48th Euromicro Conference on Software Engineering and Advanced Applications (SEAA) (pp. 263–269). IEEE.
+Tkachenko, O. (2023, 23 November). Skeleton Mammoth or how I’ve been solving the problem of reusable skeleton loaders. Dev.to.  https://dev.to/wolfriend/skeleton-mammoth-or-how-ive-been-solving-the-problem-of-reusable-skeleton-loaders-1b8b
+Vladić, G., Mijatović, S., Bošnjaković, G., Jurič, I., & Dimovski, V. (2020). Analysis of the loading animation performance and viewer perception. Dalam Proceedings of the International scientific conference on graphic engineering and design GRID 2020 (hlm. 667–675). doi.org
+
+
+LAMPIRAN
+
+
+
+
+

@@ -1,0 +1,74 @@
+// ─── Style Sheet ID ───────────────────────────────────────────────────────────
+
+/** Unique ID of the <style> tag injected into <head>. Used to prevent duplicates. */
+export const STYLE_ID = "ras-style-sheet";
+
+// ─── Global CSS ───────────────────────────────────────────────────────────────
+
+/**
+ * All CSS required by the library, injected once into <head> on first render.
+ *
+ * Includes:
+ *  - CSS custom properties (--ras-base, --ras-highlight) for easy theming
+ *  - .ras-skeleton  — base style for every skeleton block
+ *  - .ras-animate-shimmer — horizontal gradient sweep animation
+ *  - .ras-animate-pulse   — opacity fade-in/out animation
+ *  - .ras-text-stack      — flex column container for multi-line text bars
+ */
+export const styleSheet = `
+:root {
+  --ras-base: #e5e7eb;
+  --ras-highlight: #f8fafc;
+}
+
+.ras-skeleton {
+  position: relative;
+  background: var(--ras-base);
+  border-radius: var(--ras-radius, 8px);
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.ras-animate-shimmer {
+  background: linear-gradient(90deg, var(--ras-base) 0%, var(--ras-highlight) 50%, var(--ras-base) 100%);
+  background-size: 200% 100%;
+  animation: ras-shimmer 1.6s linear infinite;
+}
+
+@keyframes ras-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.ras-animate-pulse {
+  animation: ras-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ras-pulse {
+  0% { opacity: 0.88; }
+  50% { opacity: 0.52; }
+  100% { opacity: 0.88; }
+}
+
+.ras-text-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+`;
+
+// ─── Style Injection ──────────────────────────────────────────────────────────
+
+/**
+ * Injects the library stylesheet into `<head>` exactly once.
+ * Safe to call multiple times — it checks for STYLE_ID before inserting.
+ * No-op in SSR environments (where `document` is undefined).
+ */
+export function ensureStyleSheetInjected() {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = styleSheet;
+  document.head.appendChild(style);
+}

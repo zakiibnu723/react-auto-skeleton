@@ -1,0 +1,73 @@
+{
+  "name": "@ibnuzaki/react-auto-skeleton",
+  "version": "0.1.0",
+  "description": "Zero-config automatic skeleton loader for React components preserving layout and spacing.",
+  "author": "Ibnu Zaki Alhawari",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "react",
+    "skeleton",
+    "skeleton-loader",
+    "auto-skeleton",
+    "skeleton-morph",
+    "loading",
+    "zero-config",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zakiibnu723/react-auto-skeleton.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zakiibnu723/react-auto-skeleton/issues"
+  },
+  "homepage": "https://github.com/zakiibnu723/react-auto-skeleton#readme",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite --config examples/vite.config.ts",
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "preview": "vite preview --config examples/vite.config.ts"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.1",
+    "@testing-library/react": "^14.3.1",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "jsdom": "^24.0.0",
+    "prettier": "^3.2.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.7",
+    "vitest": "^1.2.0"
+  }
+}
